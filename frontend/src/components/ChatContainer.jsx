@@ -81,9 +81,8 @@ const ChatContainer = () => {
               </div>
 
               <div
-                className={`chat-bubble flex flex-col max-w-[80%] ${
-                  isOwnMessage ? "bg-blue-200" : "bg-gray-100"
-                }`}
+                className={`chat-bubble flex flex-col max-w-[80%] ${isOwnMessage ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}
+`}
               >
                 {message.image && (
                   <img
