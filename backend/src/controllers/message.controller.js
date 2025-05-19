@@ -11,11 +11,12 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+
 // Helper for uploading buffer to Cloudinary
-const streamUpload = (buffer) =>
-    new Promise((resolve, reject) => {
+const streamUpload = async (buffer, resourceType = "auto") => {
+    return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-            { resource_type: "auto" },
+            { resource_type: resourceType },
             (error, result) => {
                 if (result) resolve(result);
                 else reject(error);
@@ -23,6 +24,7 @@ const streamUpload = (buffer) =>
         );
         streamifier.createReadStream(buffer).pipe(stream);
     });
+};
 
 // Get all users except the logged-in one
 export const getUsersForSidebar = async (req, res) => {
@@ -62,27 +64,23 @@ export const sendMessage = async (req, res) => {
         const { text } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
-
         let imageUrl = null;
         if (req.file) {
             try {
-                const result = await streamUpload(req.file.buffer);
+                const result = await streamUpload(req.file.buffer, "image"); // Use "image" resource type for images
                 imageUrl = result.secure_url;
             } catch (err) {
                 console.error("Image upload error:", err);
                 return res.status(500).json({ error: "Image upload failed" });
             }
         }
-
         const newMessage = new Message({
             senderId,
             receiverId,
             text,
             image: imageUrl || undefined,
         });
-
         await newMessage.save();
-
         const receiverSocketId = getReceiverSocketId(receiverId);
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", newMessage);
@@ -90,7 +88,6 @@ export const sendMessage = async (req, res) => {
         console.log("Text:", text);
         console.log("Image:", req.file ? req.file.originalname : "No image");
         console.log("SenderId:", senderId, "ReceiverId:", receiverId);
-
         res.status(201).json(newMessage);
     } catch (error) {
         console.error("Error in sendMessage controller:", error.message);
@@ -108,13 +105,15 @@ export const sendFileMessage = async (req, res) => {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
-        const result = await streamUpload(req.file.buffer);
+        // Use "raw" resource type for non-image files
+        const result = await streamUpload(req.file.buffer, "raw");
         const fileUrl = result.secure_url;
 
         const newMessage = new Message({
             senderId,
             receiverId,
             file: fileUrl,
+            fileType: req.file.mimetype, // Store the file type
         });
 
         await newMessage.save();
@@ -130,5 +129,4 @@ export const sendFileMessage = async (req, res) => {
         console.error("Error in sendFileMessage:", error.message);
         res.status(500).json({ message: "File message failed" });
     }
-
 };

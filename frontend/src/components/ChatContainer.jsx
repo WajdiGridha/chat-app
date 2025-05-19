@@ -53,59 +53,76 @@ const ChatContainer = () => {
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, idx) => {
-          const isOwnMessage = message.senderId === authUser?._id;
-          const isLastMessage = idx === messages.length - 1;
+        
 
-          const profilePic =
-            isOwnMessage
-              ? authUser?.profilePic || "/avatar.png"
-              : selectedUser?.profilePic || "/avatar.png";
+// In components/ChatContainer.jsx
 
-          return (
-            <div
-              key={message._id || idx}
-              className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}
-              ref={isLastMessage ? messageEndRef : null}
-            >
-              <div className="chat-image avatar">
+{messages.map((message, idx) => {
+    const isOwnMessage = message.senderId === authUser?._id;
+    const isLastMessage = idx === messages.length - 1;
+
+    const profilePic =
+        isOwnMessage
+            ? authUser?.profilePic || "/avatar.png"
+            : selectedUser?.profilePic || "/avatar.png";
+
+    return (
+        <div
+            key={message._id || idx}
+            className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}
+            ref={isLastMessage ? messageEndRef : null}
+        >
+            <div className="chat-image avatar">
                 <div className="size-10 rounded-full border">
-                  <img src={profilePic} alt="profile pic" />
+                    <img src={profilePic} alt="profile pic" />
                 </div>
-              </div>
+            </div>
 
-              <div className="chat-header mb-1">
+            <div className="chat-header mb-1">
                 <time className="text-xs opacity-50 ml-1">
-                  {formatMessageTime(message.createdAt)}
+                    {formatMessageTime(message.createdAt)}
                 </time>
-              </div>
+            </div>
 
-              <div
-                className={`chat-bubble flex flex-col max-w-[80%] ${isOwnMessage ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}
-`}
-              >
+            <div
+                className={`chat-bubble flex flex-col max-w-[80%] ${isOwnMessage ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}`}
+            >
                 {message.image && (
-                  <img
-                    src={message.image}
-                    alt="Attachment"
-                    className="sm:max-w-[200px] rounded-md mb-2"
-                  />
+                    <img
+                        src={message.image}
+                        alt="Attachment"
+                        className="sm:max-w-[200px] rounded-md mb-2"
+                    />
                 )}
                 {message.text && <p>{message.text}</p>}
                 {message.file && (
-                  <a
-                    href={message.file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline mt-2"
-                  >
-                    📄 Télécharger le fichier
-                  </a>
+                    <>
+                        {message.fileType === "application/pdf" ? (
+                            <div className="w-full h-64 border">
+                                <iframe
+                                    src={message.file}
+                                    title="PDF Preview"
+                                    className="w-full h-full"
+                                    frameBorder="0"
+                                    scrolling="no"
+                                />
+                            </div>
+                        ) : (
+                            <a
+                                href={message.file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 underline mt-2"
+                            >
+                                📄 Télécharger le fichier
+                            </a>
+                        )}
+                    </>
                 )}
-              </div>
             </div>
-          );
-        })}
+        </div>
+    );
+})}
       </div>
 
       <MessageInput />
