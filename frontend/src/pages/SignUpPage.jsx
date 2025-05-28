@@ -166,7 +166,7 @@ const SignUpPage = () => {
 
       <AuthImagePattern
         title="Join our community"
-        subtitle="Connect with friends, share moments, and stay in touch with your loved ones."
+        subtitle="Streamline communication across your organization—send and receive messages and files seamlessly to stay connected, informed, and productive."
       />
     </div>
   );
